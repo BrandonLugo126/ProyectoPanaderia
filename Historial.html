@@ -1,0 +1,168 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial - Panadería Don Lugo</title>
+    <link rel="stylesheet" href="stylesheet.css">
+</head>
+<body>
+    <main>
+        <h1>Panaderia Don Lugo</h1>
+        <nav>
+            <a href="Index.html">Principal</a>
+            <a href="Historial.html">Historial de recibos</a>
+        </nav>
+
+        <div class="Historial">
+            <div class="historialheader">
+                <h2>Historial de Pedidos</h2>
+                <button id="btnLimpiarHistorial" class="btneliminar">Limpiar Historial</button>
+            </div>
+
+            <div class="listapedidos" id="listapedidos">
+            </div>
+
+            <div class="sinpedidos" id="sinpedidos">
+                <p>No hay pedidos en el historial</p>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal" id="modalLimpiar">
+        <div class="ModalContenido">
+            <h3>Confirmar acción</h3>
+            <p>¿Está seguro de que desea eliminar todo el historial de pedidos?</p>
+            <div class="modalbotones">
+                <button class="btneliminar" id="btnConfirmarLimpiar">Sí, eliminar</button>
+                <button class="btnModal" id="btnCancelarLimpiar">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Proyecto hecho por Brandon Lugo para Programacion Lado Cliente.</p>
+    </footer>
+
+    <script>
+        const listapedidos = document.getElementById('listapedidos');
+        const sinpedidos = document.getElementById('sinpedidos');
+        const btnLimpiarHistorial = document.getElementById('btnLimpiarHistorial');
+        const modalLimpiar = document.getElementById('modalLimpiar');
+        const btnConfirmarLimpiar = document.getElementById('btnConfirmarLimpiar');
+        const btnCancelarLimpiar = document.getElementById('btnCancelarLimpiar');
+
+        const HISTORIAL = 'historial';
+
+        const crearTarjetaPedido = (pedido) => {
+            const tarjeta = document.createElement('div');
+            tarjeta.className = 'tarjetapedido';
+
+            const totalProductos = pedido.productos && Array.isArray(pedido.productos)
+                ? pedido.productos.reduce((total, producto) => total + (producto.cantidad || 0), 0) : 0;
+
+            const fecha = new Date(pedido.fecha);
+            const fechaFormateada = fecha.toLocaleDateString('es-MX', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric'
+            });
+
+            const header = document.createElement('div');
+            header.className = 'tarjetaheader';
+
+            const titulo = document.createElement('h3');
+            titulo.textContent = `Ticket #${pedido.numeroTicket }`;
+
+            const fechaSpan = document.createElement('span');
+            fechaSpan.className = 'fecha';
+            fechaSpan.textContent = fechaFormateada;
+
+            header.appendChild(titulo);
+            header.appendChild(fechaSpan);
+
+            const body = document.createElement('div');
+            body.className = 'tarjetabody';
+
+            const totalP = document.createElement('p');
+            const totalStrong = document.createElement('strong');
+            totalStrong.textContent = `Total: $${(pedido.total || 0).toFixed(2)}`;
+            totalP.appendChild(totalStrong);
+
+            const productosP = document.createElement('p');
+            productosP.textContent = `Productos: ${totalProductos}`;
+
+            const efectivoP = document.createElement('p');
+            efectivoP.textContent = `Efectivo: $${(pedido.recibido || 0).toFixed(2)}`;
+
+            const cambioP = document.createElement('p');
+            cambioP.textContent = `Cambio: $${(pedido.cambio || 0).toFixed(2)}`;
+
+            body.appendChild(totalP);
+            body.appendChild(productosP);
+            body.appendChild(efectivoP);
+            body.appendChild(cambioP);
+
+            tarjeta.appendChild(header);
+            tarjeta.appendChild(body);
+
+            return tarjeta;
+        }
+
+        btnLimpiarHistorial.addEventListener('click', () => {
+            modalLimpiar.style.display = 'flex';
+        });
+
+        btnCancelarLimpiar.addEventListener('click', () => {
+            modalLimpiar.style.display = 'none';
+        });
+
+        modalLimpiar.addEventListener('click', (e) => {
+            if (e.target === modalLimpiar) {
+                modalLimpiar.style.display = 'none';
+            }
+        });
+
+        const cargarHistorial = () => {
+            let historial = JSON.parse(localStorage.getItem(HISTORIAL)) || [];
+
+            historial = historial.filter(pedido => {
+                const esValido = pedido &&
+                    pedido.productos &&
+                    Array.isArray(pedido.productos);
+
+
+                return esValido;
+            });
+
+            if (historial.length === 0) {
+                listapedidos.style.display = 'none';
+                sinpedidos.style.display = 'block';
+                return;
+            }
+
+            listapedidos.style.display = 'flex';
+            sinpedidos.style.display = 'none';
+            listapedidos.innerHTML = '';
+
+            historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+            historial.forEach(pedido => {
+                const tarjeta = crearTarjetaPedido(pedido);
+                listapedidos.appendChild(tarjeta);
+            });
+        }
+
+        const limpiarHistorial = () => {
+            localStorage.removeItem(HISTORIAL);
+            modalLimpiar.style.display = 'none';
+            cargarHistorial();
+        }
+
+        cargarHistorial();
+        btnConfirmarLimpiar.addEventListener('click', limpiarHistorial);
+    </script>
+</body>
+</html>

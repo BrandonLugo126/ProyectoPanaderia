@@ -1,0 +1,433 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Don Lugo Panadería</title>
+    <link rel="stylesheet" href="stylesheet.css">
+</head>
+<body>
+    <h1>Panaderia Don Lugo</h1>
+    <nav>
+        <a href="Index.html">Principal</a>
+        <a href="Historial.html">Historial de recibos</a>
+    </nav>
+
+    <div class="Venta">
+        <div class="Productos">
+            <div id="Concha">
+                <img src="https://static.thenounproject.com/png/1407847-200.png" alt="Concha">
+                <h3>Concha</h3>
+                <p>$12.50</p>
+            </div>
+            <div id="Cuerno">
+                <img src="https://cdn-icons-png.flaticon.com/512/2490/2490826.png" alt="Cuerno">
+                <h3>Cuerno</h3>
+                <p>$15.00</p>
+            </div>
+            <div id="Baguette">
+                <img src="https://www.pngplay.com/wp-content/uploads/13/Baguette-Download-Free-PNG.png" alt="Baguette">
+                <h3>Baguette</h3>
+                <p>$25.00</p>
+            </div>
+            <div id="Dona">
+                <img src="https://images.vexels.com/media/users/3/242648/isolated/preview/1cf10feed9ed57fb7f965281560f1353-food-treats-graphicuniformmonoline-stroke-cr-5.png" alt="Donas">
+                <h3>Donas</h3>
+                <p>$10.00</p>
+            </div>
+            <div id="Muffin">
+                <img src="https://cdn-icons-png.flaticon.com/128/10192/10192600.png" alt="Muffin">
+                <h3>Muffin</h3>
+                <p>$18.00</p>
+            </div>
+            <div id="Marranito">
+                <img src="https://www.shutterstock.com/image-vector/marranito-mexican-pig-shaped-sweet-260nw-1469502251.jpg" alt="Marranito">
+                <h3>Marranito</h3>
+                <p>$16.00</p>
+            </div>
+        </div>
+
+        <div class="Lista">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tipo de pan:</th>
+                        <th>Cantidad:</th>
+                        <th>Precio:</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="Finalizar">
+        <p class="SubT" id="subtotal">Sub Total: $0.00</p>
+        <div class="botones">
+            <button class="btnfinalizar" id="btnFin">Finalizar Compra</button>
+            <button class="btneliminar" id="btnEliminar">Eliminar Pedido</button>
+        </div>
+    </div>
+
+    <div class="modal" id="modalSeguridad">
+        <div class="ModalContenido">
+            <h3>Código de Seguridad</h3>
+            <p>Ingrese el código de supervisor para eliminar el pedido:</p>
+            <input type="password" class="modalinput" id="codigoSeguridad" placeholder="Código de seguridad">
+            <div class="modalbotones">
+                <button class="btneliminar" id="btnConfirmarEliminar">Confirmar</button>
+                <button class="btnModal" id="btnCancelarEliminar">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modalpago" id="modalPago">
+        <div class="modalpagocontenido">
+            <h3>Pago del Cliente</h3>
+            <div class="infopago">
+                <p><strong>Total a pagar:</strong> <span id="totalPagar">$0.00</span></p>
+                <p><strong>Dinero recibido:</strong></p>
+                <input type="number" class="modalinput" id="dineroRecibido" placeholder="0.00" step="0.01" min="0">
+                <p><strong>Cambio:</strong> <span id="cambioCalculado">$0.00</span></p>
+            </div>
+            <div class="error" id="error">
+                Dinero insuficiente
+            </div>
+            <div class="modalbotones">
+                <button class="btnModal" id="btnConfirmarPago">Confirmar Pago</button>
+                <button class="btneliminar" id="btnCancelarPago">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Proyecto hecho por Brandon Lugo para Programacion Lado Cliente.</p>
+    </footer>
+
+
+    <script>
+        const btnFin = document.getElementById("btnFin");
+        const btnEliminar = document.getElementById("btnEliminar");
+        const btnConcha = document.getElementById("Concha");
+        const btnCuerno = document.getElementById("Cuerno");
+        const btnBaguette = document.getElementById("Baguette");
+        const btnDona = document.getElementById("Dona");
+        const btnMuffin = document.getElementById("Muffin");
+        const btnMarranito = document.getElementById("Marranito");
+
+        const subTotal = document.getElementById("subtotal");
+        const tBody = document.getElementById("tbody");
+
+        const modalSeguridad = document.getElementById("modalSeguridad");
+        const codigoSeguridad = document.getElementById("codigoSeguridad");
+        const btnConfirmarEliminar = document.getElementById("btnConfirmarEliminar");
+        const btnCancelarEliminar = document.getElementById("btnCancelarEliminar");
+
+        const modalPago = document.getElementById("modalPago");
+        const totalPagar = document.getElementById("totalPagar");
+        const dineroRecibido = document.getElementById("dineroRecibido");
+        const cambioCalculado = document.getElementById("cambioCalculado");
+        const error = document.getElementById("error");
+        const btnConfirmarPago = document.getElementById("btnConfirmarPago");
+        const btnCancelarPago = document.getElementById("btnCancelarPago");
+
+        const Codigo = "1234";
+        const Clave = "pedidoPan";
+        const ClaveHisto = 'historial';
+        const ultimoTick = 'ultimoTicket';
+
+        const obtenerProximoTicket = () => {
+            const ultimoTicket = parseInt(localStorage.getItem(ultimoTick)) || 0;
+            const proximoTicket = ultimoTicket + 1;
+            localStorage.setItem(ultimoTick, proximoTicket.toString());
+            return proximoTicket;
+        }
+
+        const guardarEnHistorial = (datosTicket) => {
+
+            const historial = JSON.parse(localStorage.getItem(ClaveHisto)) || [];
+
+            const pedidoConHistorial = {
+                productos: datosTicket.productos,
+                subtotal: datosTicket.subtotal,
+                iva: datosTicket.iva,
+                total: datosTicket.total,
+                recibido: datosTicket.recibido,
+                cambio: datosTicket.cambio,
+                numeroTicket: datosTicket.numeroTicket,
+                id: Date.now().toString(),
+                fecha: new Date().toISOString()
+            };
+
+            historial.push(pedidoConHistorial);
+            localStorage.setItem(ClaveHisto, JSON.stringify(historial));
+
+        }
+
+        cargarPedidoGuardado();
+
+        btnFin.addEventListener("click", function () {
+            const total = parseFloat(subTotal.textContent.replace("Sub Total: $", ""));
+
+            if (total <= 0) {
+               
+                return;
+            }
+
+            totalPagar.textContent = `$${total.toFixed(2)}`;
+            dineroRecibido.value = "";
+            cambioCalculado.textContent = "$0.00";
+            error.style.display = "none";
+            modalPago.style.display = "flex";
+            dineroRecibido.focus();
+        });
+
+        btnEliminar.addEventListener("click", function () {
+            modalSeguridad.style.display = "flex";
+            codigoSeguridad.value = "";
+            codigoSeguridad.focus();
+        });
+
+        btnConfirmarEliminar.addEventListener("click", function () {
+            if (codigoSeguridad.value === Codigo) {
+                eliminarPedido();
+                modalSeguridad.style.display = "none";
+            } else {
+                codigoSeguridad.style.border = "2px solid red";
+                codigoSeguridad.value = "";
+                codigoSeguridad.focus();
+            }
+        });
+
+        btnCancelarEliminar.addEventListener("click", function () {
+            modalSeguridad.style.display = "none";
+        });
+
+        dineroRecibido.addEventListener("input", function () {
+            const total = parseFloat(subTotal.textContent.replace("Sub Total: $", ""));
+            const recibido = parseFloat(dineroRecibido.value) || 0;
+            const cambio = recibido - total;
+
+            if (cambio >= 0) {
+                cambioCalculado.textContent = `$${cambio.toFixed(2)}`;
+                error.style.display = "none";
+            } else {
+                cambioCalculado.textContent = `$${Math.abs(cambio).toFixed(2)}`;
+                error.style.display = "block";
+            }
+        });
+
+        btnConfirmarPago.addEventListener("click", function () {
+            const total = parseFloat(subTotal.textContent.replace("Sub Total: $", ""));
+            const recibido = parseFloat(dineroRecibido.value) || 0;
+
+            if (recibido < total) {
+                error.style.display = "block";
+                return;
+            }
+
+            const cambio = recibido - total;
+            const productos = obtenerProductosParaTicket();
+
+            abrirTicket(total, recibido, cambio, productos);
+
+            modalPago.style.display = "none";
+            eliminarPedido();
+        });
+
+        btnCancelarPago.addEventListener("click", function () {
+            modalPago.style.display = "none";
+        });
+
+        modalSeguridad.addEventListener("click", function (e) {
+            if (e.target === modalSeguridad) {
+                modalSeguridad.style.display = "none";
+            }
+        });
+
+        modalPago.addEventListener("click", function (e) {
+            if (e.target === modalPago) {
+                modalPago.style.display = "none";
+            }
+        });
+
+        function obtenerProductosParaTicket() {
+            const productos = [];
+            const filas = tBody.querySelectorAll("tr");
+
+            filas.forEach(fila => {
+                const nombre = fila.cells[0].textContent;
+                const cantidad = parseInt(fila.cells[1].textContent);
+                const precio = parseFloat(fila.cells[2].textContent.replace('$', ''));
+                const precioUnitario = precio / cantidad;
+
+                productos.push({
+                    nombre: nombre,
+                    cantidad: cantidad,
+                    precio: precioUnitario
+                });
+            });
+
+            return productos;
+        }
+
+        const abrirTicket = (total, recibido, cambio, productos) => {
+            /*Formula para calcular la pantalla y poder centrar el ticket (esta si la copie y la pegue) */
+            const ancho = 400;
+            const alto = 700;
+            const left = (screen.width - ancho) / 2;
+            const top = (screen.height - alto) / 2;
+
+            const calcularIVA = (monto) => monto * 0.16;
+
+            const iva = calcularIVA(total);
+            const subtotal = total - iva;
+            const numeroTicket = obtenerProximoTicket();
+
+            const datosTicket = {
+                productos: productos,
+                subtotal: subtotal,
+                iva: iva,
+                total: total,
+                recibido: recibido,
+                cambio: cambio,
+                numeroTicket: numeroTicket
+            };
+
+            localStorage.setItem('ticket', JSON.stringify(datosTicket));
+            guardarEnHistorial(datosTicket);
+
+            const ticketWindow = window.open('Ticket.html', 'Ticket', `width=${ancho},height=${alto},left=${left},top=${top}`);
+        }
+
+        function guardarPedido() {
+            const productos = {};
+            const filas = tBody.querySelectorAll("tr");
+
+            filas.forEach(fila => {
+                const nombre = fila.cells[0].textContent;
+                const cantidad = parseInt(fila.cells[1].textContent);
+                const precio = parseFloat(fila.cells[2].textContent.replace('$', ''));
+
+                productos[nombre] = {
+                    cantidad: cantidad,
+                    precioUnitario: precio / cantidad
+                };
+            });
+
+            const pedido = {
+                productos: productos,
+                subtotal: parseFloat(subTotal.textContent.replace("Sub Total: $", ""))
+            };
+
+            localStorage.setItem(Clave, JSON.stringify(pedido));
+        }
+
+        function cargarPedidoGuardado() {
+            const pedidoGuardado = localStorage.getItem(Clave);
+
+            if (pedidoGuardado) {
+                const pedido = JSON.parse(pedidoGuardado);
+
+                tBody.innerHTML = "";
+
+                for (const nombre in pedido.productos) {
+                    const producto = pedido.productos[nombre];
+                    agregarProductoATabla(nombre, producto.cantidad, producto.precioUnitario);
+                }
+
+                subTotal.textContent = `Sub Total: $${pedido.subtotal.toFixed(2)}`;
+            }
+        }
+
+        function agregarProductoATabla(nombre, cantidad, precioUnitario) {
+            const fila = document.createElement("tr");
+
+            const celdaNombre = document.createElement("td");
+            celdaNombre.textContent = nombre;
+            fila.appendChild(celdaNombre);
+
+            const celdaCantidad = document.createElement("td");
+            celdaCantidad.textContent = cantidad;
+            fila.appendChild(celdaCantidad);
+
+            const celdaPrecio = document.createElement("td");
+            celdaPrecio.textContent = `$${(precioUnitario * cantidad).toFixed(2)}`;
+            fila.appendChild(celdaPrecio);
+
+            tBody.appendChild(fila);
+        }
+
+        function eliminarPedido() {
+            tBody.innerHTML = '';
+            subTotal.textContent = "Sub Total: $0.00";
+            localStorage.removeItem(Clave);
+        }
+
+        function AgregarProducto(nombre, precio) {
+            let productoExistente = null;
+            const filas = tBody.querySelectorAll("tr");
+
+            filas.forEach(fila => {
+                if (fila.cells[0].textContent === nombre) {
+                    productoExistente = fila;
+                }
+            });
+
+            if (productoExistente) {
+                const celdaCantidad = productoExistente.cells[1];
+                const nuevaCantidad = parseInt(celdaCantidad.textContent) + 1;
+                celdaCantidad.textContent = nuevaCantidad;
+
+                const celdaPrecio = productoExistente.cells[2];
+                celdaPrecio.textContent = `$${(precio * nuevaCantidad).toFixed(2)}`;
+            } else {
+                agregarProductoATabla(nombre, 1, precio);
+            }
+
+            let subtotalActual = 0;
+            filas.forEach(fila => {
+                const precioTotal = parseFloat(fila.cells[2].textContent.replace('$', ''));
+                subtotalActual += precioTotal;
+            });
+
+            if (!productoExistente) {
+                subtotalActual = 0;
+                const todasLasFilas = tBody.querySelectorAll("tr");
+                todasLasFilas.forEach(fila => {
+                    const precioTotal = parseFloat(fila.cells[2].textContent.replace('$', ''));
+                    subtotalActual += precioTotal;
+                });
+            }
+
+            subTotal.textContent = `Sub Total: $${subtotalActual.toFixed(2)}`;
+            guardarPedido();
+        }
+
+        btnConcha.addEventListener("click", function () {
+            AgregarProducto("Concha", 12.50);
+        });
+
+        btnCuerno.addEventListener("click", function () {
+            AgregarProducto("Cuerno", 15.00);
+        });
+
+        btnBaguette.addEventListener("click", function () {
+            AgregarProducto("Baguette", 25.00);
+        });
+
+        btnDona.addEventListener("click", function () {
+            AgregarProducto("Dona", 10.00);
+        });
+
+        btnMuffin.addEventListener("click", function () {
+            AgregarProducto("Muffin", 18.00);
+        });
+
+        btnMarranito.addEventListener("click", function () {
+            AgregarProducto("Marranito", 16.00);
+        });
+    </script>
+</body>
+</html>
